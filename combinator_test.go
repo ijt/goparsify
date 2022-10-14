@@ -33,6 +33,16 @@ func TestSeq(t *testing.T) {
 	})
 }
 
+func TestNestedSeq(t *testing.T) {
+	parser := Seq(Seq("a", "b"), "c", Seq("d", "e"))
+
+	t.Run("reconstruction", func(t *testing.T) {
+		input := "a b c d e"
+		node, _ := runParser(input, parser)
+		require.Equal(t, input, node.Token)
+	})
+}
+
 func TestSeqWithMaybes(t *testing.T) {
 	parser := Seq(Maybe("twas"), "brillig")
 
