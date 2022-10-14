@@ -65,7 +65,7 @@ func init() {
 }
 
 func calc(input string) (float64, error) {
-	result, err := Run(y, input)
+	result, _, err := Run(y, input)
 	if err != nil {
 		return 0, err
 	}

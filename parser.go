@@ -76,7 +76,8 @@ func ParsifyAll(parsers ...Parserish) []Parser {
 
 // Run applies some input to a parser and returns the result, failing if the input isnt fully consumed.
 // It is a convenience method for the most common way to invoke a parser.
-func Run(parser Parserish, input string, ws ...VoidParser) (result interface{}, err error) {
+// The parsedStr return value is the subset of the input string that was parsed.
+func Run(parser Parserish, input string, ws ...VoidParser) (result interface{}, parsedStr string, err error) {
 	p := Parsify(parser)
 	ps := NewState(input)
 	if len(ws) > 0 {
@@ -88,14 +89,14 @@ func Run(parser Parserish, input string, ws ...VoidParser) (result interface{}, 
 	ps.WS(ps)
 
 	if ps.Error.expected != "" {
-		return ret.Result, &ps.Error
+		return ret.Result, ret.Token, &ps.Error
 	}
 
 	if ps.Get() != "" {
-		return ret.Result, UnparsedInputError{ps.Get()}
+		return ret.Result, ret.Token, UnparsedInputError{ps.Get()}
 	}
 
-	return ret.Result, nil
+	return ret.Result, ret.Token, nil
 }
 
 // Cut prevents backtracking beyond this point. Usually used after keywords when you

@@ -193,20 +193,21 @@ func TestParseString(t *testing.T) {
 	Y := Map("hello", func(n *Result) { n.Result = n.Token })
 
 	t.Run("full match", func(t *testing.T) {
-		result, err := Run(Y, "hello")
+		result, parsedStr, err := Run(Y, "hello")
 		require.Equal(t, "hello", result)
+		require.Equal(t, "hello", parsedStr)
 		require.NoError(t, err)
 	})
 
 	t.Run("partial match", func(t *testing.T) {
-		result, err := Run(Y, "hello world")
+		result, _, err := Run(Y, "hello world")
 		require.Equal(t, "hello", result)
 		require.Error(t, err)
 		require.Equal(t, "left unparsed: world", err.Error())
 	})
 
 	t.Run("error", func(t *testing.T) {
-		result, err := Run(Y, "world")
+		result, _, err := Run(Y, "world")
 		require.Nil(t, result)
 		require.Error(t, err)
 		require.Equal(t, "offset 0: expected hello", err.Error())
