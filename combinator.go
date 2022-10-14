@@ -2,7 +2,6 @@ package goparsify
 
 import (
 	"bytes"
-	"strings"
 )
 
 // Seq matches all of the given parsers in order and returns their result as .Child[n]
@@ -12,20 +11,14 @@ func Seq(parsers ...Parserish) Parser {
 	return NewParser("Seq()", func(ps *State, node *Result) {
 		node.Child = make([]Result, len(parserfied))
 		startpos := ps.Pos
-		var toksSpaces []string
 		for i, parser := range parserfied {
 			parser(ps, &node.Child[i])
 			if ps.Errored() {
 				ps.Pos = startpos
 				return
 			}
-			c := node.Child[i]
-			toksSpaces = append(toksSpaces, ps.Input[ps.WsStart:ps.WsEnd])
-			toksSpaces = append(toksSpaces, c.Token)
 		}
-		// Set the token of the node from the tokens of the children and the
-		// spaces between them.
-		node.Token = strings.Join(toksSpaces, "")
+		node.Token = ps.Input[startpos:ps.Pos]
 	})
 }
 
