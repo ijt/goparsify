@@ -25,6 +25,12 @@ func TestSeq(t *testing.T) {
 		require.Equal(t, 6, p2.Error.pos)
 		require.Equal(t, 0, p2.Pos)
 	})
+
+	t.Run("token matches packed input", func(t *testing.T) {
+		input := "helloworld"
+		node, _ := runParser(input, parser)
+		require.Equal(t, input, node.Token)
+	})
 }
 
 func TestSeqWithMaybes(t *testing.T) {
