@@ -12,11 +12,6 @@ type State struct {
 	Input string
 	// An offset into the string, pointing to the current tip
 	Pos int
-	// WsStart points to the beginning of the latest chunk of whitespace
-	// just before Pos if there was one.
-	WsStart int
-	// WsEnd points to the end (exclusive) of the latest chunk of whitespace.
-	WsEnd int
 	// Do not backtrack past this point
 	Cut int
 	// Error is a secondary return channel from parsers, but used so heavily
@@ -29,8 +24,6 @@ type State struct {
 // ASCIIWhitespace matches any of the standard whitespace characters. It is faster
 // than the UnicodeWhitespace parser as it does not need to decode unicode runes.
 func ASCIIWhitespace(s *State) {
-	s.WsStart = s.Pos
-	defer func() { s.WsEnd = s.Pos }()
 	for s.Pos < len(s.Input) {
 		switch s.Input[s.Pos] {
 		case '\t', '\n', '\v', '\f', '\r', ' ':
@@ -44,8 +37,6 @@ func ASCIIWhitespace(s *State) {
 // UnicodeWhitespace matches any unicode space character. Its a little slower
 // than the ascii parser because it matches a rune at a time.
 func UnicodeWhitespace(s *State) {
-	s.WsStart = s.Pos
-	defer func() { s.WsEnd = s.Pos }()
 	for s.Pos < len(s.Input) {
 		r, w := utf8.DecodeRuneInString(s.Get())
 		if !unicode.IsSpace(r) {
@@ -56,11 +47,7 @@ func UnicodeWhitespace(s *State) {
 }
 
 // NoWhitespace disables automatic whitespace matching
-func NoWhitespace(s *State) {
-	// Make sure the whitespace chunk is set to an empty string
-	// so we don't mess up the input reconstruction for Token in Seq().
-	s.WsStart = s.Pos
-	s.WsEnd = s.Pos
+func NoWhitespace(_ *State) {
 }
 
 // NewState creates a new State from a string
