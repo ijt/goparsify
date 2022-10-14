@@ -5,7 +5,8 @@ import (
 )
 
 func parse(input string) (result interface{}, err error) {
-	return Run(tag, input)
+	result, _, err = Run(tag, input)
+	return result, err
 }
 
 type htmlTag struct {

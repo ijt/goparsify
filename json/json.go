@@ -38,5 +38,6 @@ func init() {
 
 // Unmarshall json string into map[string]interface{} or []interface{}
 func Unmarshal(input string) (interface{}, error) {
-	return Run(_value, input, ASCIIWhitespace)
+	result, _, err := Run(_value, input, ASCIIWhitespace)
+	return result, err
 }
