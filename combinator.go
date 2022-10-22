@@ -2,6 +2,7 @@ package goparsify
 
 import (
 	"bytes"
+	"fmt"
 )
 
 // Seq matches all of the given parsers in order and returns their result as .Child[n]
@@ -62,6 +63,55 @@ func AnyWithName(name string, parsers ...Parserish) Parser {
 				ps.Recover()
 				continue
 			}
+			return
+		}
+
+		ps.Error = Error{pos: startpos, expected: name}
+		ps.Pos = startpos
+	})
+}
+
+// Longest matches the longest matching parser and returns its result.
+// It's like AnyWithName, but greedy.
+func Longest(name string, parsers ...Parserish) Parser {
+	parserfied := ParsifyAll(parsers...)
+
+	return NewParser("Longest()", func(ps *State, node *Result) {
+		ps.WS(ps)
+		if ps.Pos >= len(ps.Input) {
+			ps.ErrorHere("!EOF")
+			return
+		}
+		startpos := ps.Pos
+
+		if ps.Cut <= startpos {
+			ps.Recover()
+		} else {
+			return
+		}
+
+		bestPS := *ps
+		bestResult := *node
+		for i, parser := range parserfied {
+			fmt.Println(i)
+			parser(ps, node)
+			if ps.Errored() {
+				if ps.Cut > startpos {
+					break
+				}
+				ps.Recover()
+				continue
+			}
+			if ps.Pos > bestPS.Pos {
+				bestPS = *ps
+				bestResult = *node
+			}
+			ps.Pos = startpos
+		}
+
+		if bestPS.Pos > startpos {
+			*ps = bestPS
+			*node = bestResult
 			return
 		}
 
