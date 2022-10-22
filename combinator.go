@@ -2,7 +2,6 @@ package goparsify
 
 import (
 	"bytes"
-	"fmt"
 )
 
 // Seq matches all of the given parsers in order and returns their result as .Child[n]
@@ -92,8 +91,7 @@ func Longest(name string, parsers ...Parserish) Parser {
 
 		bestPS := *ps
 		bestResult := *node
-		for i, parser := range parserfied {
-			fmt.Println(i)
+		for _, parser := range parserfied {
 			parser(ps, node)
 			if ps.Errored() {
 				if ps.Cut > startpos {
