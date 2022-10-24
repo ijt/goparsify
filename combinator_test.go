@@ -192,6 +192,11 @@ func TestAny(t *testing.T) {
 }
 
 func TestSome(t *testing.T) {
+	t.Run("Does not match empty input", func(t *testing.T) {
+		_, _, err := Run(Some(Chars("a-g"), Exact(",")), "")
+		require.Error(t, err)
+	})
+
 	t.Run("Matches sequence with sep", func(t *testing.T) {
 		node, p2 := runParser("a,b,c,d,e,", Some(Chars("a-g"), ","))
 		require.False(t, p2.Errored())
@@ -227,6 +232,11 @@ func TestSome(t *testing.T) {
 }
 
 func TestMany(t *testing.T) {
+	t.Run("Matches empty input", func(t *testing.T) {
+		_, _, err := Run(Many(Chars("a-g"), Exact(",")), "")
+		require.NoError(t, err)
+	})
+
 	t.Run("Matches sequence with sep", func(t *testing.T) {
 		node, p2 := runParser("a,b,c,d,e,", Many(Chars("a-g"), Exact(",")))
 		assertSequence(t, node, "a", "b", "c", "d", "e")
