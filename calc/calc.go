@@ -27,7 +27,7 @@ var (
 		}
 	})
 
-	sum = Seq(prod, Some(Seq(sumOp, prod))).Map(func(n *Result) {
+	sum = Seq(prod, Many(Seq(sumOp, prod))).Map(func(n *Result) {
 		i := n.Child[0].Result.(float64)
 
 		for _, op := range n.Child[1].Child {
@@ -42,7 +42,7 @@ var (
 		n.Result = i
 	})
 
-	prod = Seq(&value, Some(Seq(prodOp, &value))).Map(func(n *Result) {
+	prod = Seq(&value, Many(Seq(prodOp, &value))).Map(func(n *Result) {
 		i := n.Child[0].Result.(float64)
 
 		for _, op := range n.Child[1].Child {
