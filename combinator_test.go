@@ -262,9 +262,9 @@ func TestMany(t *testing.T) {
 		require.Equal(t, "d,e,", p2.Get())
 	})
 
-	t.Run("Returns error if nothing matches", func(t *testing.T) {
+	t.Run("Returns no error if nothing matches (Many means zero or more matches)", func(t *testing.T) {
 		_, p2 := runParser("a,b,c,d,e,", Many(Chars("def"), Exact(",")))
-		require.Equal(t, "offset 0: expected def", p2.Error.Error())
+		require.False(t, p2.Errored())
 		require.Equal(t, "a,b,c,d,e,", p2.Get())
 	})
 }
