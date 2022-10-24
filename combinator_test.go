@@ -229,6 +229,12 @@ func TestSome(t *testing.T) {
 		require.Equal(t, 6, p2.Pos)
 		require.Equal(t, "d,e,", p2.Get())
 	})
+
+	t.Run("Returns error if nothing matches", func(t *testing.T) {
+		_, p2 := runParser("a,b,c", Some(Chars("def"), Exact(",")))
+		require.Equal(t, "offset 0: expected def", p2.Error.Error())
+		require.Equal(t, "a,b,c", p2.Get())
+	})
 }
 
 func TestMany(t *testing.T) {
