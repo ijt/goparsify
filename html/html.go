@@ -31,7 +31,7 @@ var (
 	})
 
 	attr  = Seq(identifier, "=", StringLit(`"'`))
-	attrs = Some(attr).Map(func(node *Result) {
+	attrs = Many(attr).Map(func(node *Result) {
 		attr := map[string]string{}
 
 		for _, attrNode := range node.Child {
