@@ -9,6 +9,67 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestSignalSeq(t *testing.T) {
+	qty := Regex(`\d+`).Map(func(n *Result) {
+		n.Result = n.Token
+	})
+	thing := Regex(`eggs|chickens`).Map(func(n *Result) {
+		n.Result = n.Token
+	})
+	noise := Regex(`\S+`).Map(func(n *Result) {
+		n.Result = "<noise>"
+	})
+	p := SignalSeq(noise, qty, thing).Map(func(n *Result) {
+		var signals []string
+		for _, c := range n.Child {
+			s := c.Result.(string)
+			if s != "<noise>" {
+				signals = append(signals, s)
+			}
+		}
+		n.Result = signals
+	})
+
+	t.Run("error if empty", func(t *testing.T) {
+		_, _, err := Run(p, "")
+		require.Error(t, err)
+	})
+
+	t.Run("error if all noise", func(t *testing.T) {
+		_, _, err := Run(p, "a b blah foo")
+		require.Error(t, err)
+	})
+
+	t.Run("error if signal in wrong order", func(t *testing.T) {
+		_, _, err := Run(p, "eggs 12")
+		require.Error(t, err)
+	})
+
+	t.Run("error if missing signal", func(t *testing.T) {
+		_, _, err := Run(p, "eggs")
+		require.Error(t, err)
+	})
+
+	t.Run("error if missing other signal", func(t *testing.T) {
+		_, _, err := Run(p, "12")
+		require.Error(t, err)
+	})
+
+	t.Run("all signal and no noise is fine", func(t *testing.T) {
+		node, p2 := runParser("12 eggs", p)
+		assertSequence(t, node, "12", "eggs")
+		require.Equal(t, "", p2.Get())
+		require.Equal(t, "12 eggs", node.Token)
+	})
+
+	t.Run("all signal and some noise is fine", func(t *testing.T) {
+		node, p2 := runParser("i would like to buy 12 large eggs if you have them", p)
+		assertSequence(t, node, "12", "eggs")
+		require.Equal(t, " if you have them", p2.Get())
+		require.Equal(t, "12 eggs", node.Token)
+	})
+}
+
 func TestSeq(t *testing.T) {
 	parser := Seq("hello", "world")
 

@@ -2,9 +2,48 @@ package goparsify
 
 import (
 	"bytes"
+	"strings"
 )
 
-// Seq matches all of the given parsers in order and returns their result as .Child[n]
+// SignalSeq matches all of the given parsers in order and returns their result
+// as .Child[n]. It skips over inputs that do not match the expected parsers
+// but do match the given noise parser.
+func SignalSeq(noise Parserish, signals ...Parserish) Parser {
+	noiseParser := Parsify(noise)
+	signalParsers := ParsifyAll(signals...)
+
+	return NewParser("SignalSeq()", func(ps *State, node *Result) {
+		node.Child = make([]Result, len(signals))
+		startpos := ps.Pos
+		for i, signalParser := range signalParsers {
+			for {
+				signalParser(ps, &node.Child[i])
+				if !ps.Errored() {
+					break
+				}
+				// There is no signal here.
+				// Try parsing a chunk of noise instead.
+				ps.Recover()
+				var ignored Result
+				noiseParser(ps, &ignored)
+				if ps.Errored() {
+					// Parsing noise didn't work so give up.
+					ps.Pos = startpos
+					return
+				}
+			}
+		}
+
+		var toks []string
+		for _, c := range node.Child {
+			toks = append(toks, c.Token)
+		}
+		node.Token = strings.Join(toks, " ")
+	})
+}
+
+// Seq matches all of the given parsers in order and returns their result as
+// .Child[n]
 func Seq(parsers ...Parserish) Parser {
 	parserfied := ParsifyAll(parsers...)
 
