@@ -23,12 +23,14 @@ func SignalSeq(noise Parserish, signals ...Parserish) Parser {
 				}
 				// There is no signal here.
 				// Try parsing a chunk of noise instead.
+				expectedForSignal := ps.Error.expected
 				ps.Recover()
 				var ignored Result
 				noiseParser(ps, &ignored)
 				if ps.Errored() {
 					// Parsing noise didn't work so give up.
 					ps.Pos = startpos
+					ps.Error.expected = expectedForSignal + " or noise"
 					return
 				}
 			}
