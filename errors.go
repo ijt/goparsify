@@ -20,6 +20,12 @@ type UnparsedInputError struct {
 	remaining string
 }
 
+// Is tells whether the target is of type UnparsedInputError
+func (e UnparsedInputError) Is(target error) bool {
+	_, ok := target.(UnparsedInputError)
+	return ok
+}
+
 // Error satisfies the golang error interface
 func (e UnparsedInputError) Error() string {
 	return "left unparsed: " + e.remaining
