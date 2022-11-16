@@ -107,6 +107,21 @@ func Cut() Parser {
 	}
 }
 
+// NamedRegex works like Regex except that it takes a name that is used in
+// error messages. This is expecially helpful when the pattern is long.
+func NamedRegex(name, pattern string) Parser {
+	re := regexp.MustCompile("^(" + pattern + ")")
+	return NewParser(pattern, func(ps *State, node *Result) {
+		ps.WS(ps)
+		if match := re.FindString(ps.Get()); match != "" {
+			ps.Advance(len(match))
+			node.Token = match
+			return
+		}
+		ps.ErrorHere(name)
+	})
+}
+
 // Regex returns a match if the regex successfully matches
 func Regex(pattern string) Parser {
 	re := regexp.MustCompile("^(" + pattern + ")")
