@@ -129,21 +129,6 @@ func Regex(pattern string) Parser {
 
 // Exact will fully match the exact string supplied, or error. The match will be stored in .Token
 func Exact(match string) Parser {
-	if len(match) == 1 {
-		matchByte := match[0]
-		return NewParser(match, func(ps *State, node *Result) {
-			ps.WS(ps)
-			if ps.Pos >= len(ps.Input) || ps.Input[ps.Pos] != matchByte {
-				ps.ErrorHere(match)
-				return
-			}
-
-			ps.Advance(1)
-
-			node.Token = match
-		})
-	}
-
 	return NewParser(match, func(ps *State, node *Result) {
 		ps.WS(ps)
 		if !strings.HasPrefix(ps.Get(), match) {
