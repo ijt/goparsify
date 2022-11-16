@@ -124,16 +124,7 @@ func NamedRegex(name, pattern string) Parser {
 
 // Regex returns a match if the regex successfully matches
 func Regex(pattern string) Parser {
-	re := regexp.MustCompile("^(" + pattern + ")")
-	return NewParser(pattern, func(ps *State, node *Result) {
-		ps.WS(ps)
-		if match := re.FindString(ps.Get()); match != "" {
-			ps.Advance(len(match))
-			node.Token = match
-			return
-		}
-		ps.ErrorHere(pattern)
-	})
+	return NamedRegex(pattern, pattern)
 }
 
 // Exact will fully match the exact string supplied, or error. The match will be stored in .Token
