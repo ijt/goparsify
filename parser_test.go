@@ -82,6 +82,51 @@ func TestExact(t *testing.T) {
 	})
 }
 
+func TestInsensitive(t *testing.T) {
+	t.Run("success string", func(t *testing.T) {
+		node, ps := runParser("foobar", Insensitive("fo"))
+		require.Equal(t, "fo", node.Token)
+		require.Equal(t, "obar", ps.Get())
+	})
+
+	t.Run("success string with different case", func(t *testing.T) {
+		node, ps := runParser("FOobar", Insensitive("fo"))
+		require.Equal(t, "FO", node.Token)
+		require.Equal(t, "obar", ps.Get())
+	})
+
+	t.Run("success char", func(t *testing.T) {
+		node, ps := runParser("foobar", Insensitive("f"))
+		require.Equal(t, "f", node.Token)
+		require.Equal(t, "oobar", ps.Get())
+	})
+
+	t.Run("success char with different case", func(t *testing.T) {
+		node, ps := runParser("Foobar", Insensitive("f"))
+		require.Equal(t, "F", node.Token)
+		require.Equal(t, "oobar", ps.Get())
+	})
+
+	t.Run("error", func(t *testing.T) {
+		_, ps := runParser("foobar", Insensitive("bar"))
+		require.Equal(t, "bar", ps.Error.expected)
+		require.Equal(t, 0, ps.Pos)
+	})
+
+	t.Run("error char", func(t *testing.T) {
+		_, ps := runParser("foobar", Insensitive("o"))
+		require.Equal(t, "o", ps.Error.expected)
+		require.Equal(t, 0, ps.Pos)
+	})
+
+	t.Run("eof char", func(t *testing.T) {
+		_, ps := runParser("", Insensitive("o"))
+		require.Equal(t, "o", ps.Error.expected)
+		require.Equal(t, 0, ps.Pos)
+	})
+
+}
+
 func TestChars(t *testing.T) {
 	t.Run("full match", func(t *testing.T) {
 		node, ps := runParser("foobar", Chars("a-z"))

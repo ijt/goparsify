@@ -142,6 +142,23 @@ func Exact(match string) Parser {
 	})
 }
 
+// Insensitive fully matches the exact string supplied without caring about
+// case, or error. The match will be stored in .Token
+func Insensitive(match string) Parser {
+	return NewParser(match, func(ps *State, node *Result) {
+		ps.WS(ps)
+		slice := ps.Get()
+		if !strings.HasPrefix(strings.ToLower(slice), strings.ToLower(match)) {
+			ps.ErrorHere(match)
+			return
+		}
+
+		ps.Advance(len(match))
+
+		node.Token = slice[:len(match)]
+	})
+}
+
 func parseRepetition(defaultMin, defaultMax int, repetition ...int) (min int, max int) {
 	min = defaultMin
 	max = defaultMax
