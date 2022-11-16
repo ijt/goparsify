@@ -62,7 +62,7 @@ func TestSignalSeq(t *testing.T) {
 		require.Equal(t, "12 eggs", node.Token)
 	})
 
-	t.Run("all signal and some noise is fine", func(t *testing.T) {
+	t.Run("some signal and some noise is fine", func(t *testing.T) {
 		node, p2 := runParser("i would like to buy 12 large eggs if you have them", p)
 		assertSequence(t, node, "12", "eggs")
 		require.Equal(t, " if you have them", p2.Get())
