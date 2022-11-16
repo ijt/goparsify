@@ -111,54 +111,6 @@ func AnyWithName(name string, parsers ...Parserish) Parser {
 	})
 }
 
-// Longest matches the longest matching parser and returns its result.
-// It's like AnyWithName, but greedy.
-func Longest(name string, parsers ...Parserish) Parser {
-	parserfied := ParsifyAll(parsers...)
-
-	return NewParser("Longest()", func(ps *State, node *Result) {
-		ps.WS(ps)
-		if ps.Pos >= len(ps.Input) {
-			ps.ErrorHere("!EOF")
-			return
-		}
-		startpos := ps.Pos
-
-		if ps.Cut <= startpos {
-			ps.Recover()
-		} else {
-			return
-		}
-
-		bestPS := *ps
-		bestResult := *node
-		for _, parser := range parserfied {
-			parser(ps, node)
-			if ps.Errored() {
-				if ps.Cut > startpos {
-					break
-				}
-				ps.Recover()
-				continue
-			}
-			if ps.Pos > bestPS.Pos {
-				bestPS = *ps
-				bestResult = *node
-			}
-			ps.Pos = startpos
-		}
-
-		if bestPS.Pos > startpos {
-			*ps = bestPS
-			*node = bestResult
-			return
-		}
-
-		ps.Error = Error{pos: startpos, expected: name}
-		ps.Pos = startpos
-	})
-}
-
 // Any matches the first successful parser and returns its result
 func Any(parsers ...Parserish) Parser {
 	parserfied := ParsifyAll(parsers...)
