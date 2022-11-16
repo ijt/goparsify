@@ -53,6 +53,7 @@ func TestSignalSeq(t *testing.T) {
 	t.Run("error if missing other signal", func(t *testing.T) {
 		_, _, err := Run(p, "12")
 		require.Error(t, err)
+		require.Equal(t, "offset 2: expected eggs|chickens or noise", err.Error())
 	})
 
 	t.Run("all signal and no noise is fine", func(t *testing.T) {
