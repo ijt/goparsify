@@ -138,21 +138,6 @@ func TestMaybe(t *testing.T) {
 	})
 }
 
-func TestNamedRegex(t *testing.T) {
-	t.Run("Error message shows name, not underlying regex", func(t *testing.T) {
-		_, p2 := runParser("fox", NamedRegex("fowl", `hens|roosters`))
-		require.Equal(t, "offset 0: expected fowl", p2.Error.Error())
-		require.Equal(t, 0, p2.Error.Pos())
-		require.Equal(t, 0, p2.Pos)
-	})
-
-	t.Run("Works like Regex", func(t *testing.T) {
-		node, p2 := runParser("hens", NamedRegex("fowl", `hens|roosters`))
-		require.Equal(t, "hens", node.Token)
-		require.Equal(t, false, p2.Errored())
-	})
-}
-
 func TestAnyWithName(t *testing.T) {
 	t.Run("Matches any", func(t *testing.T) {
 		node, p2 := runParser("hello world!", AnyWithName("hello or world" /* name */, "hello", "world"))
