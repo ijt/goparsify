@@ -64,18 +64,20 @@ func TestSignalSeq(t *testing.T) {
 	t.Run("some signal and some noise is fine", func(t *testing.T) {
 		node, p2 := runParser("i would like to buy 12 large eggs if you have them", p)
 		assertSequence(t, node, "12", "eggs")
-		require.Equal(t, " if you have them", p2.Get())
+		require.Equal(t, "", p2.Get())
 		require.Equal(t, "12 eggs", node.Token)
 	})
 
 	t.Run("the noise parser can include results", func(t *testing.T) {
-		dogs := NamedRegex("wild dog", "coyote|fox")
+		dogs := NamedRegex("wild dog", "coyote|fox").Map(func(n *Result) {
+			n.Result = n.Token
+		})
 		random := AnyWithName("random", dogs, noise)
 		p := SignalSeq(random, qty, thing)
 
 		node, p2 := runParser("i, the fox, would like to buy 12 large eggs for my friend the coyote if you have them", p)
 		assertSequence(t, node, "fox", "12", "eggs", "coyote")
-		require.Equal(t, " if you have them", p2.Get())
+		require.Equal(t, "", p2.Get())
 		require.Equal(t, "fox 12 eggs coyote", node.Token)
 	})
 }

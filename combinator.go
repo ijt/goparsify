@@ -13,26 +13,46 @@ func SignalSeq(noise Parserish, signals ...Parserish) Parser {
 	signalParsers := ParsifyAll(signals...)
 
 	return NewParser("SignalSeq()", func(ps *State, node *Result) {
-		node.Child = make([]Result, len(signals))
+		node.Child = nil
 		startpos := ps.Pos
-		for i, signalParser := range signalParsers {
+		for _, signalParser := range signalParsers {
 			for {
-				signalParser(ps, &node.Child[i])
+				var c Result
+				signalParser(ps, &c)
 				if !ps.Errored() {
+					node.Child = append(node.Child, c)
 					break
 				}
 				// There is no signal here.
 				// Try parsing a chunk of noise instead.
 				expectedForSignal := ps.Error.expected
 				ps.Recover()
-				var ignored Result
-				noiseParser(ps, &ignored)
+				var noiseChild Result
+				noiseParser(ps, &noiseChild)
 				if ps.Errored() {
 					// Parsing noise didn't work so give up.
 					ps.Pos = startpos
 					ps.Error.expected = expectedForSignal + " or noise"
 					return
 				}
+				// Include noise if it is requested by having its result set
+				// to non-nil.
+				if noiseChild.Result != nil {
+					node.Child = append(node.Child, noiseChild)
+				}
+			}
+		}
+
+		// Run the noise parser until there's nothing left to consume.
+		for {
+			var noiseChild Result
+			noiseParser(ps, &noiseChild)
+			if ps.Errored() {
+				ps.Recover()
+				break
+			}
+			if noiseChild.Result != nil {
+				node.Child = append(node.Child, noiseChild)
 			}
 		}
 
