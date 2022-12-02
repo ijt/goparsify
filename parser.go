@@ -161,7 +161,22 @@ func Exact(match string) Parser {
 // Insensitive fully matches the exact string supplied without caring about
 // case, or error. The match will be stored in .Token
 func Insensitive(match string) Parser {
-	return NamedRegex(match, `(?i)`+match)
+	return NewParser(match, func(ps *State, node *Result) {
+		ps.WS(ps)
+		if !hasPrefixInsensitive(ps.Get(), match) {
+			ps.ErrorHere(match)
+			return
+		}
+		node.Token = ps.Get()[:len(match)]
+		ps.Advance(len(match))
+	})
+}
+
+func hasPrefixInsensitive(s, p string) bool {
+	if len(s) < len(p) {
+		return false
+	}
+	return strings.EqualFold(s[:len(p)], p)
 }
 
 func parseRepetition(defaultMin, defaultMax int, repetition ...int) (min int, max int) {
