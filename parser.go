@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
-	"sync"
 	"unicode/utf8"
 )
 
@@ -111,7 +110,7 @@ func Cut() Parser {
 // NamedRegex works like Regex except that it takes a name that is used in
 // error messages. This is expecially helpful when the pattern is long.
 func NamedRegex(name, pattern string) Parser {
-	re := mustCompile("^(" + pattern + ")")
+	re := regexp.MustCompile("^(" + pattern + ")")
 	return NewParser(pattern, func(ps *State, node *Result) {
 		ps.WS(ps)
 		if match := re.FindString(ps.Get()); match != "" {
@@ -121,21 +120,6 @@ func NamedRegex(name, pattern string) Parser {
 		}
 		ps.ErrorHere(name)
 	})
-}
-
-var patToRegexMu sync.Mutex
-var patToRegex = make(map[string]*regexp.Regexp)
-
-func mustCompile(pat string) *regexp.Regexp {
-	patToRegexMu.Lock()
-	defer patToRegexMu.Unlock()
-	rx, ok := patToRegex[pat]
-	if ok {
-		return rx
-	}
-	rx = regexp.MustCompile(pat)
-	patToRegex[pat] = rx
-	return rx
 }
 
 // Regex returns a match if the regex successfully matches
